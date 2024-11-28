@@ -87,9 +87,9 @@ namespace NitroxLauncher.Models.Utils
 
         private static void CheckFirewallRules(FirewallDirection direction)
         {
-            CheckClientFirewallRules(direction);
-            CheckServerFirewallRules(direction);
-            CheckHamachiFirewallRules(direction);
+            // CheckClientFirewallRules(direction);
+            // CheckServerFirewallRules(direction);
+            // CheckHamachiFirewallRules(direction);
         }
 
         private static void CheckServerFirewallRules(FirewallDirection direction)

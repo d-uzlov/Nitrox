@@ -115,8 +115,6 @@ namespace NitroxLauncher
 
             lastFindSubnauticaTask = Task.Factory.StartNew(() =>
             {
-                PirateDetection.TriggerOnDirectory(path);
-
                 if (!FileSystem.Instance.IsWritable(Directory.GetCurrentDirectory()) || !FileSystem.Instance.IsWritable(path))
                 {
                     // TODO: Move this check to another place where Nitrox installation can be verified. (i.e: another page on the launcher in order to check permissions, network setup, ...)
@@ -197,11 +195,6 @@ namespace NitroxLauncher
                 throw new Exception("Location of Subnautica is unknown. Set the path to it in settings.");
             }
 
-            if (PirateDetection.HasTriggered)
-            {
-                throw new Exception("Aarrr! Nitrox walked the plank :(");
-            }
-
 #if RELEASE
             if (Process.GetProcessesByName("Subnautica").Length > 0)
             {
@@ -253,6 +246,7 @@ namespace NitroxLauncher
             IGamePlatform platform = GamePlatforms.GetPlatformByGameDir(subnauticaPath);
             
             // Start game & gaming platform if needed.
+            // using ProcessEx game = System.Diagnostics.Process.Start(subnauticaExe, subnauticaLaunchArguments);
             using ProcessEx game = platform switch
             {
                 Steam s => await s.StartGameAsync(subnauticaExe, GameInfo.Subnautica.SteamAppId, subnauticaLaunchArguments),
