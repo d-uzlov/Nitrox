@@ -1,3 +1,8 @@
+
+```bash
+dotnet build --configuration Release --self-contained false
+```
+
 <p align="center">
     <img src="https://i.imgur.com/ofnNX5z.gif" alt="Nitrox Subnautica Multiplayer Mod" />
 </p>
