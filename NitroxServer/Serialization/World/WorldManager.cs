@@ -107,8 +107,26 @@ public static class WorldManager
         GetSaves();
     }
 
+    public static void MakeSureVersionExists(string name) {
+        Log.Info($"MakeSureVersionExists: {name}");
+
+        string saveDir = Path.Combine(SavesFolderDir, name);
+        Directory.CreateDirectory(saveDir);
+        ServerConfig serverConfig = ServerConfig.Load(saveDir);
+
+        string fileEnding = "json";
+        if (serverConfig.SerializerMode == ServerSerializerMode.PROTOBUF)
+        {
+            fileEnding = "nitrox";
+        }
+        var versionFile = Path.Combine(saveDir, $"Version.{fileEnding}");
+        if (!File.Exists(versionFile)) {
+            File.Create(versionFile).Close();
+        }
+    }
     public static string CreateEmptySave(string name)
     {
+        Log.Info($"creating new save: {name}");
         string saveDir = Path.Combine(SavesFolderDir, name);
 
         // Check save path for other "My World" files and increment the end value if there is, so as to prevent duplication

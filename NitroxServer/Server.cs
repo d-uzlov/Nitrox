@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -82,45 +83,49 @@ namespace NitroxServer
 
         public static ServerConfig ServerStartHandler()
         {
-            string saveDir = null;
+            Log.Info($"Searching args for saves dir starting with {WorldManager.SavesFolderDir}");
             foreach (string arg in Environment.GetCommandLineArgs())
             {
-                if (arg.StartsWith(WorldManager.SavesFolderDir, StringComparison.OrdinalIgnoreCase) && Directory.Exists(arg))
+                Log.Info($"checking: {arg}");
+                if (arg.StartsWith(WorldManager.SavesFolderDir, StringComparison.OrdinalIgnoreCase))
                 {
-                    saveDir = arg;
-                    break;
+                    Log.Info($"found saves dir in args: {arg}");
+                    if (!Directory.Exists(arg)) {
+                        WorldManager.CreateEmptySave(Path.GetFileName(arg));
+                    } else {
+                        WorldManager.MakeSureVersionExists(Path.GetFileName(arg));
+                    }
+                    var result = ServerConfig.Load(arg);
+                    Log.Info($"loaded config: {result.FileName}, {result.SaveName}");
+                    return result;
                 }
             }
-            if (saveDir == null)
+            Log.Info($"args do not have saves dir, searching existing saves");
+            // Check if there are any save files
+            WorldManager.Listing[] worldList = WorldManager.GetSaves().ToArray();
+            if (worldList.Any())
             {
-                // Check if there are any save files
-                WorldManager.Listing[] worldList = WorldManager.GetSaves().ToArray();
-                if (worldList.Any())
+                // Get last save file used
+                string lastSaveAccessed = worldList[0].WorldSaveDir;
+                if (worldList.Length > 1)
                 {
-                    // Get last save file used
-                    string lastSaveAccessed = worldList[0].WorldSaveDir;
-                    if (worldList.Length > 1)
+                    for (int i = 1; i < worldList.Length; i++)
                     {
-                        for (int i = 1; i < worldList.Length; i++)
+                        if (File.GetLastWriteTime(Path.Combine(worldList[i].WorldSaveDir, "WorldData.json")) > File.GetLastWriteTime(lastSaveAccessed))
                         {
-                            if (File.GetLastWriteTime(Path.Combine(worldList[i].WorldSaveDir, "WorldData.json")) > File.GetLastWriteTime(lastSaveAccessed))
-                            {
-                                lastSaveAccessed = worldList[i].WorldSaveDir;
-                            }
+                            lastSaveAccessed = worldList[i].WorldSaveDir;
                         }
                     }
-                    saveDir = lastSaveAccessed;
                 }
-                else
-                {
-                    // Create new save file
-                    saveDir = Path.Combine(WorldManager.SavesFolderDir, "My World");
-                    Directory.CreateDirectory(saveDir);
-                    ServerConfig serverConfig = ServerConfig.Load(saveDir);
-                    Log.Debug($"No save file was found, creating a new one...");
-                }
-
+                Log.Info($"found last loaded save {lastSaveAccessed}");
+                return ServerConfig.Load(lastSaveAccessed);
             }
+            
+            // Create new save file
+            var saveDir = Path.Combine(WorldManager.SavesFolderDir, "server-default-save-file");
+            Directory.CreateDirectory(saveDir);
+            ServerConfig serverConfig = ServerConfig.Load(saveDir);
+            Log.Info($"No save file was found, creating a new one...");
 
             return ServerConfig.Load(saveDir);
         }

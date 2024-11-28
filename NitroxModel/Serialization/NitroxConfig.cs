@@ -28,6 +28,7 @@ namespace NitroxModel.Serialization
         {
             if (!File.Exists(Path.Combine(saveDir, FileName)))
             {
+                Log.Warn($"NitroxConfig::Deserialize {saveDir}/{FileName} does not exist");
                 return;
             }
 

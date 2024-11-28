@@ -215,7 +215,7 @@ public class WorldEntityManager
 
             if (totalEntites > 0)
             {
-                Log.Info($"Loading : {(int)((totalEntites/ 709531) * 100)}%");
+                Log.Info($"Loading : {(int)((totalEntites / 709531.0) * 100)}%");
             }
         }
     }
